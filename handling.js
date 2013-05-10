@@ -26,8 +26,8 @@ var formatter = {
 		this.addPie(ppos);
 		this.addPie(npos);
 
-		this.addBar(ppos);
-		this.addBar(npos);
+		this.addTable(ppos);
+		this.addTable(npos);
 	},
 
 	addBar : function (params) {
@@ -50,6 +50,8 @@ var formatter = {
 			this.label[0].attr({r : 7});
 			this.label[1].attr({'font-weight' : 800});
 
+			this.sector.scale(1.1, 1.1, this.cx, this.cy);
+
 			var pos = this.sector.middle;
 			this.flag =
 				ctx.popup(pos.x, pos.y, this.sector.value.value)
@@ -59,11 +61,36 @@ var formatter = {
 			this.label[0].attr({r : 4});
 			this.label[1].attr({'font-weight' : 400});
 
+			this.sector.scale(0.9, 0.9, this.cx, this.cy);
+
 			this.flag.animate(
 				{opacity : 0},
 				300,
 				function () { this.remove(); });
 		}
+	},
+
+	addTable : function (params) {
+		var table = document.createElement('table'),
+			tbody = document.createElement('tbody'), //yes, this matters
+			tr, elKey, elValue,
+			len = params.values.length;
+
+		for (var i = 0; i < len; i += 1) {
+			tr = document.createElement('tr');
+			elKey = document.createElement('td');
+			elValue = document.createElement('td');
+
+			elKey.textContent = params.keys[i];
+			elValue.textContent = params.values[i].value;
+
+			tr.appendChild(elKey);
+			tr.appendChild(elValue);
+			tbody.appendChild(tr);
+		}
+
+		table.appendChild(tbody);
+		document.body.appendChild(table);
 	},
 
 	addContainer : function () {
@@ -134,7 +161,7 @@ function fetch (params, cb) {
 				ctx[type] = 0;
 			}
 
-			ctx[type] += n;
+			ctx[type] += Math.abs(n);
 		});
 	}
 };
