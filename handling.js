@@ -15,7 +15,6 @@ var data = {
 		"post_unupvoted": 115,
 		"user_deleted": 5,
 		"answer_unaccepted": 75,
-		"post_upvoted": 0
 	}
 };
 
@@ -44,13 +43,13 @@ var formatter = {
 
 		var pie = ctx.piechart(
 			240, 240, 100,
-			params.values,
+			params.values.slice(),
 			{ legend : params.legend, legendothers : 'Other (%%.%%)' }
 		);
 
 		pie.hover(on, off);
 		function on () {
-			this.label[0].attr({r : 7});
+			this.label[0].animate({r : 7}, 500);
 			this.label[1].attr({'font-weight' : 800});
 
 			this.sector.stop();
@@ -62,7 +61,7 @@ var formatter = {
 					.insertBefore(this.cover);
 		}
 		function off () {
-			this.label[0].attr({r : 4});
+			this.label[0].animate({r : 5}, 500);
 			this.label[1].attr({'font-weight' : 400});
 
 			this.sector.animate({
@@ -77,6 +76,7 @@ var formatter = {
 	},
 
 	addTable : function (params) {
+		//params.values.sort(function (a, b) { return b - a; });
 		var cont = document.createElement('span'),
 			table = document.createElement('table'),
 			tbody = document.createElement('tbody'), //yes, this matters
@@ -89,7 +89,7 @@ var formatter = {
 			elValue = document.createElement('td');
 
 			elKey.textContent = params.keys[i];
-			elValue.textContent = params.values[i].value;
+			elValue.textContent = params.values[i];
 
 			tr.appendChild(elKey);
 			tr.appendChild(elValue);
@@ -115,7 +115,9 @@ var formatter = {
 	params : function (data) {
 		var keys, legend, values;
 
-		keys = Object.keys(data);
+		keys = Object.keys(data).sort(function (k0, k1) {
+			return data[k1] - data[k0];
+		});
 
 		values = keys.map(function (k) {
 			return data[k];
@@ -130,6 +132,14 @@ var formatter = {
 };
 
 function fetch (params, cb) {
+	var map = {
+		post_upvoted : {
+			'10' : 'answer',
+			'5'  : 'question'
+		},
+		answer_accepted : 'answer',
+		bounty_earned : 'bounty'
+	};
 	var res = { pos : {}, neg : {} };
 
 	if (!params.page) {
