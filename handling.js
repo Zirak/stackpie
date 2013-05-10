@@ -1,20 +1,21 @@
 //34567890123456789012345678901234567890123456789012345678901234567890123456789
 /* global Raphael */
 var data = {
-	pos : {
-		answer_accepted : 855,
-		asker_accepts_answer : 28,
-		association_bonus : 100,
-		bounty_earned : 100,
-		post_undownvoted : 12,
-		post_upvoted : 3790,
-		suggested_edit_approval_received : 16
+	"pos": {
+		"post_upvoted": 3800,
+		"answer_accepted": 855,
+		"post_undownvoted": 12,
+		"asker_accepts_answer": 28,
+		"bounty_earned": 100,
+		"suggested_edit_approval_received": 16,
+		"association_bonus": 100
 	},
-	neg : {
-		answer_unaccepted : 75,
-		post_downvoted : 42,
-		post_unupvoted : 115,
-		user_deleted : 5
+	"neg": {
+		"post_downvoted": 42,
+		"post_unupvoted": 115,
+		"user_deleted": 5,
+		"answer_unaccepted": 75,
+		"post_upvoted": 0
 	}
 };
 
@@ -26,6 +27,7 @@ var formatter = {
 		this.addPie(ppos);
 		this.addPie(npos);
 
+		document.body.appendChild(document.createElement('br'));
 		this.addTable(ppos);
 		this.addTable(npos);
 	},
@@ -42,7 +44,8 @@ var formatter = {
 
 		var pie = ctx.piechart(
 			240, 240, 100,
-			params.values, { legend : params.legend }
+			params.values,
+			{ legend : params.legend, legendothers : 'Other (%%.%%)' }
 		);
 
 		pie.hover(on, off);
@@ -50,6 +53,7 @@ var formatter = {
 			this.label[0].attr({r : 7});
 			this.label[1].attr({'font-weight' : 800});
 
+			this.sector.stop();
 			this.sector.scale(1.1, 1.1, this.cx, this.cy);
 
 			var pos = this.sector.middle;
@@ -61,7 +65,9 @@ var formatter = {
 			this.label[0].attr({r : 4});
 			this.label[1].attr({'font-weight' : 400});
 
-			this.sector.scale(0.9, 0.9, this.cx, this.cy);
+			this.sector.animate({
+				transform : 's1 1 ' + this.cx + ' ' + this.cy
+			}, 500, 'easeIn');
 
 			this.flag.animate(
 				{opacity : 0},
@@ -71,7 +77,8 @@ var formatter = {
 	},
 
 	addTable : function (params) {
-		var table = document.createElement('table'),
+		var cont = document.createElement('span'),
+			table = document.createElement('table'),
 			tbody = document.createElement('tbody'), //yes, this matters
 			tr, elKey, elValue,
 			len = params.values.length;
@@ -89,8 +96,12 @@ var formatter = {
 			tbody.appendChild(tr);
 		}
 
+		cont.className = 'table-container';
+		table.className = 'table-view';
+		table.border = 1;
 		table.appendChild(tbody);
-		document.body.appendChild(table);
+		cont.appendChild(table);
+		document.body.appendChild(cont);
 	},
 
 	addContainer : function () {
