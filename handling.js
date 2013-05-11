@@ -193,6 +193,3 @@ function emptyElem (elem) {
 		elem.removeChild(child);
 	}
 }
-
-
-formatter.format(data);
