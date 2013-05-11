@@ -1,0 +1,7 @@
+.table-container {
+	width : 640px;
+}
+.table-view {
+	display : inline-table;
+	margin : 0px auto;
+}

@@ -1,6 +1,6 @@
 //34567890123456789012345678901234567890123456789012345678901234567890123456789
 /* global Raphael */
-var data = {
+var zirak = {
 	"pos": {
 		"post_upvoted": 3800,
 		"answer_accepted": 855,
@@ -17,18 +17,73 @@ var data = {
 		"answer_unaccepted": 75,
 	}
 };
+var amaan = {
+	"pos": {
+		"post_upvoted": 4070,
+		"answer_accepted": 1530,
+		"post_undownvoted": 24,
+		"bounty_earned": 50,
+		"suggested_edit_approval_received": 64,
+		"asker_accepts_answer": 16,
+		"association_bonus": 100
+	},
+	"neg": {
+		"user_deleted": 20,
+		"post_downvoted": 46,
+		"post_unupvoted": 195,
+		"asker_accepts_answer": 0,
+		"answer_accepted": 0,
+		"asker_unaccept_answer": 4,
+		"answer_unaccepted": 270,
+		"post_upvoted": 0
+	}
+};
+var rlemon = {
+	"pos": {
+		"post_upvoted": 6110,
+		"answer_accepted": 1980,
+		"user_deleted": 2,
+		"post_undownvoted": 42,
+		"bounty_earned": 500,
+		"asker_accepts_answer": 130,
+		"suggested_edit_approval_received": 20,
+		"association_bonus": 100
+	},
+	"neg": {
+		"user_deleted": 50,
+		"post_unupvoted": 265,
+		"post_downvoted": 116,
+		"answer_unaccepted": 315,
+		"bounty_given": 50,
+		"vote_fraud_reversal": 60,
+		"asker_unaccept_answer": 12,
+		"asker_accepts_answer": 0,
+		"answer_accepted": 0
+	}
+};
 
 var formatter = {
-	format : function (data) {
-		var ppos = this.params(data.pos),
-			npos = this.params(data.neg);
+	parent : document.getElementById('parent'),
+	container : null,
 
-		this.addPie(ppos);
-		this.addPie(npos);
+	format : function (data, add) {
+		if (!add) {
+			emptyElem(this.parent);
+		}
+		this.container = document.createElement('div');
+		this.parent.appendChild(this.container);
 
-		document.body.appendChild(document.createElement('br'));
-		this.addTable(ppos);
-		this.addTable(npos);
+		this.addStuff(this.params(data.pos), this.params(data.neg))
+	},
+
+	addStuff : function (pos, neg) {
+		this.addPie(pos);
+		this.addPie(neg);
+
+		this.container.appendChild(document.createElement('br'));
+
+		this.addTable(pos);
+		this.addTable(neg);
 	},
 
 	addBar : function (params) {
@@ -42,14 +97,16 @@ var formatter = {
 		var ctx = this.addContainer();
 
 		var pie = ctx.piechart(
-			240, 240, 100,
+			320, 150, 100,
 			params.values.slice(),
-			{ legend : params.legend, legendothers : 'Other (%%.%%)' }
+			{ legend : params.legend,
+			  legendothers : 'Other (%%.%%)',
+			  legendpos : 'south' }
 		);
 
 		pie.hover(on, off);
 		function on () {
-			this.label[0].animate({r : 7}, 500);
+			this.label[0].animate({r : 7}, 300);
 			this.label[1].attr({'font-weight' : 800});
 
 			this.sector.stop();
@@ -61,7 +118,7 @@ var formatter = {
 					.insertBefore(this.cover);
 		}
 		function off () {
-			this.label[0].animate({r : 5}, 500);
+			this.label[0].animate({r : 5}, 300);
 			this.label[1].attr({'font-weight' : 400});
 
 			this.sector.animate({
@@ -69,8 +126,7 @@ var formatter = {
 			}, 500, 'easeIn');
 
 			this.flag.animate(
-				{opacity : 0},
-				300,
+				{opacity : 0}, 300,
 				function () { this.remove(); });
 		}
 	},
@@ -101,14 +157,14 @@ var formatter = {
 		table.border = 1;
 		table.appendChild(tbody);
 		cont.appendChild(table);
-		document.body.appendChild(cont);
+		this.container.appendChild(cont);
 	},
 
 	addContainer : function () {
 		var container = document.createElement('span'),
 			raph = Raphael(container, 640, 480);
 
-		document.body.appendChild(container);
+		this.container.appendChild(container);
 		return raph;
 	},
 
@@ -131,86 +187,12 @@ var formatter = {
 	}
 };
 
-function fetch (params, cb) {
-	var map = {
-		post_upvoted : {
-			'10' : 'answer',
-			'5'  : 'question'
-		},
-		answer_accepted : 'answer',
-		bounty_earned : 'bounty'
-	};
-	var res = { pos : {}, neg : {} };
-
-	if (!params.page) {
-		params.page = 1;
+function emptyElem (elem) {
+	var child;
+	while (child = elem.firstChild) {
+		elem.removeChild(child);
 	}
-	if (!params.site) {
-		params.site = 'stackoverflow';
-	}
-
-	request(params);
-
-	function request (params) {
-		var url = 'https://api.stackexchange.com/2.1/users/' + params.usrid +
-			'/reputation-history?page=' + params.page +
-			'&site=' + params.site;
-
-		jsonp(url, finish);
-	}
-
-	function finish (data) {
-		addData(data);
-
-		if (data.has_more) {
-			params.page += 1;
-			request(params);
-		}
-		else {
-			cb(res);
-		}
-	}
-
-	function addData (data) {
-		data.items.forEach(function (item) {
-			var type = item.reputation_history_type,
-				n = item.reputation_change,
-				ctx;
-
-			ctx = n > 0 ? res.pos : res.neg;
-			if (!ctx[type]) {
-				ctx[type] = 0;
-			}
-
-			ctx[type] += Math.abs(n);
-		});
-	}
-};
-
-function jsonp (url, cb) {
-	var script = document.createElement('script'),
-		param;
-
-	//generate the function name
-	do {
-		param = 'cb' + (Date.now() * Math.ceil(Math.random()));
-	} while (window[param]);
-
-	//slap it on the global object
-	window[param] = function () {
-		cb.apply(null, arguments);
-
-		//cleanup on aisle awesome
-		delete window[param];
-		script.parentNode.removeChild(script);
-	};
-
-	if (url.indexOf('?') === -1) {
-		url += '?';
-	}
-
-	script.src = url + '&callback=' + param;
-	document.head.appendChild(script);
 }
+
 
 formatter.format(data);

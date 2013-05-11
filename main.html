@@ -1,17 +1,22 @@
 <!DOCTYPE html>
-<style>
-	.table-container {
-		width : 640px;
-	}
-	.table-view {
-		display : inline-table;
-		margin : 0px auto;
-	}
-</style>
+<link href='style.css' rel='stylesheet' />
+
 <body>
+
+<!--this is a horrible name-->
+<form name='moose'>
+	<label>User id: <input name='usrid' /></label>
+	<label>Site: <input name='site' value='stackoverflow' /></label>
+	<input type='submit' />
+	<input type='hidden' name='load' value='Loading' disabled />
+</form>
+
+<section id='parent'></section>
+
 <script src='raphael/raphael-min.js'></script>
 <script src='raphael/g.raphael-min.js'></script>
 <script src='raphael/g.pie-min.js'></script>
 
+<script src='bridge.js'></script>
 <script src='handling.js'></script>
 </body>
